@@ -1,4 +1,4 @@
-package com.example.lexa.services1;
+package com.example.lexa.layouts;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -10,7 +10,6 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in

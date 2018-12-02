@@ -1,4 +1,4 @@
-package com.example.lexa.services1;
+package com.example.lexa.layouts;
 
 import android.app.Activity;
 import android.content.*;

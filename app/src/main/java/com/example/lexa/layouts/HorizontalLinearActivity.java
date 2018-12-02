@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Messenger;
 import android.view.View;
 import java.lang.ref.WeakReference;
 import java.util.Random;
@@ -22,9 +23,9 @@ public class HorizontalLinearActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.horizontal_linear);
 
-        mViews[0] = findViewById(R.id.view1);
-        mViews[1] = findViewById(R.id.view2);
-        mViews[2] = findViewById(R.id.view3);
+        mViews[0] = findViewById(R.id.horizontal_view1);
+        mViews[1] = findViewById(R.id.horizontal_view2);
+        mViews[2] = findViewById(R.id.horizontal_view3);
 
         mRandomDataBroadcastReceiver = new RandomDataBroadcastReceiver(this);
     }

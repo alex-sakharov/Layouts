@@ -39,9 +39,20 @@
         android:layout_marginTop="16dp"
         />
 
+    <TextView
+        android:id="@+id/text_view"
+        android:layout_width="200dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/back"
+        />
+
     <Button
         android:id="@+id/button_start_horizontal_linear_layout_activity"
-        android:onClick="onStartHorizontalLnearLayoutActivityClick"
+        android:onClick="onStartHorizontalLinearLayoutActivityClick"
         android:text="@string/horizontal_linear_layout"
         android:layout_width="300dp"
         android:layout_height="0dp"
@@ -51,7 +62,7 @@
         />
 
     <Button
-        android:id="@+id/button_start_telative_layout_activity"
+        android:id="@+id/button_start_relative_layout_activity"
         android:onClick="onStartRelativeLayoutActivityClick"
         android:text="@string/relative_layout"
         android:layout_width="300dp"

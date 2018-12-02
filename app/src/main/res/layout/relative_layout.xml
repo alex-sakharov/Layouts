@@ -5,6 +5,35 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_vertical"
     tools:context=".RelativeLayoutActivity">
+
+    <View
+        android:id="@+id/relative_view1"
+        android:layout_height="64dp"
+        android:layout_width="100dp"
+        android:layout_marginStart="8dp"
+        android:background="#20cccc"
+        android:layout_alignParentStart="true"
+        />
+    <View
+        android:id="@+id/relative_view2"
+        android:layout_height="64dp"
+        android:layout_width="0dp"
+        android:layout_marginStart="8dp"
+        android:background="#20cccc"
+        android:layout_alignBottom="@id/relative_view1"
+        android:layout_toEndOf="@id/relative_view1"
+        android:layout_toStartOf="@id/relative_view3"
+        />
+    <View
+        android:id="@+id/relative_view3"
+        android:layout_height="64dp"
+        android:layout_width="100dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="#20cccc"
+        android:layout_alignParentEnd="true"
+        />
 
 </RelativeLayout>

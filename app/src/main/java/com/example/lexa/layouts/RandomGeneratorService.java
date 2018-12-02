@@ -7,10 +7,9 @@ import android.content.IntentFilter;
 import android.os.*;
 import android.support.v4.app.JobIntentService;
 import android.util.Log;
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.ref.WeakReference;
 import java.util.Random;
+import java.util.concurrent.*;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -18,9 +17,11 @@ import java.util.Random;
  */
 public class RandomGeneratorService extends JobIntentService {
     static final String PARAM_DATA = "com.example.lexa.layouts.extra.PARAM_DATA";
-    static final int MSG_NEW_DATA = 1,
+    static final int
+            MSG_NEW_DATA = 1,
             MSG_STOP = 2,
-            MSG_WANT_DATA = 3;
+            MSG_SUBSCRIBE = 3,
+            MSG_UNSUBSCRIBE = 4;
 
     private static final String ACTION_START = "com.example.lexa.layouts.action.START";
     private static final String ACTION_STOPPED = "com.example.lexa.layouts.action.STOPPED";
@@ -31,7 +32,7 @@ public class RandomGeneratorService extends JobIntentService {
 
     private final Messenger mMessenger;
     private volatile boolean mNeedStop;
-    private volatile Messenger mReceiverListener;
+    private ConcurrentHashMap<Messenger, Messenger> mReceiverListeners;
 
     /**
      * Starts this service to perform action START with the given parameters. If
@@ -61,6 +62,7 @@ public class RandomGeneratorService extends JobIntentService {
     public RandomGeneratorService() {
         super();
         mMessenger = new Messenger(new MessageHandler(this));
+        mReceiverListeners = new ConcurrentHashMap<>(3);
     }
 
     @Override
@@ -72,15 +74,20 @@ public class RandomGeneratorService extends JobIntentService {
     @Override
     public boolean onUnbind(Intent intent) {
         Log.d(TAG, "onUnbind");
-        mReceiverListener = null;
+        mReceiverListeners.clear();
         return false;
     }
 
     void setNeedStop() {
         this.mNeedStop = true;
     }
-    void setReceiverListener(Messenger receiverListener) {
-        this.mReceiverListener = receiverListener;
+
+    void addReceiverListener(Messenger receiverListener) {
+        this.mReceiverListeners.put(receiverListener, receiverListener);
+    }
+
+    void removeReceiverListener(Messenger receiverListener) {
+        this.mReceiverListeners.remove(receiverListener);
     }
 
     @Override
@@ -114,12 +121,12 @@ public class RandomGeneratorService extends JobIntentService {
             dataIntent.putExtra(PARAM_DATA, data);
             sendBroadcast(dataIntent);
 
-            if (mReceiverListener != null) {
-                Message msg = Message.obtain(null, MSG_NEW_DATA);
-                msg.obj = data;
+            Message msg = Message.obtain(null, MSG_NEW_DATA);
+            msg.obj = data;
 
+            for (Messenger messenger: mReceiverListeners.keySet()) {
                 try {
-                    mReceiverListener.send(msg);
+                    messenger.send(msg);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -151,8 +158,11 @@ public class RandomGeneratorService extends JobIntentService {
                 case MSG_STOP:
                     service.setNeedStop();
                     break;
-                case MSG_WANT_DATA:
-                    service.setReceiverListener(msg.replyTo);
+                case MSG_SUBSCRIBE:
+                    service.addReceiverListener(msg.replyTo);
+                    break;
+                case MSG_UNSUBSCRIBE:
+                    service.removeReceiverListener(msg.replyTo);
                     break;
                 default:
                     throw new RuntimeException("Unknown message 'what'");

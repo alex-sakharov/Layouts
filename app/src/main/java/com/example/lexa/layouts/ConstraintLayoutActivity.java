@@ -21,7 +21,7 @@ public class ConstraintLayoutActivity extends Activity {
             Log.d(TAG, "onServiceConnected");
             mServiceMessenger = new Messenger(service);
 
-            Message msg = Message.obtain(null, RandomGeneratorService.MSG_WANT_DATA);
+            Message msg = Message.obtain(null, RandomGeneratorService.MSG_SUBSCRIBE);
             msg.replyTo = mMessenger;
             try {
                 mServiceMessenger.send(msg);
@@ -65,6 +65,17 @@ public class ConstraintLayoutActivity extends Activity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
+
+        if (mServiceMessenger != null) {
+            Message msg = Message.obtain(null, RandomGeneratorService.MSG_UNSUBSCRIBE);
+            msg.replyTo = mMessenger;
+            try {
+                mServiceMessenger.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
         unbindService(mServiceConnection);
         unregisterReceiver(mServiceStoppedBroadcastReceiver);
     }

@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Layouts</string>
     <string name="start_service">Start Service</string>
-    <string name="start_activity">Start activity</string>
     <string name="stop_service">Stop service</string>
+    <string name="constraint_layout">constraint layout</string>
+    <string name="exercise">Реализовать 4 активити\nАктивити 1 будет содержать разметку LinearLayout с горизонтальной ориентацией\nАктивити 2 будет содержать разметку с RelativeLayout\nАктивити 3 будет содержать разметку LinearLayout с вертикальной ориентацией\nАктивити 4 будет содержать разметку с ConstraintLayout\n1 и 3 активити должны получать данные с Service с помощью BroadcastReceiver\n2 и 4 должны получать данные с сервиса с помощью присоединения к сервису (bind)</string>
+    <string name="horizontal_linear_layout">horizontal linear layout</string>
+    <string name="relative_layout">relative layout</string>
+    <string name="title_activity_horizontal_linear">Horizontal Linear</string>
 </resources>

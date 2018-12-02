@@ -9,9 +9,9 @@ import android.os.*;
 import android.util.Log;
 import android.view.View;
 
-public class MainActivity extends Activity {
+public class VerticalLinearLayoutActivity extends Activity {
     private Messenger mServiceMessenger;
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "VerticalLinearLayout";
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.vertical_linear);
     }
 
     @Override
@@ -52,10 +52,6 @@ public class MainActivity extends Activity {
         bindService(RandomGeneratorService.newIntent(this), mServiceConnection, Context.BIND_IMPORTANT);
     }
 
-    public void onStartActivityClick(View view) {
-        startActivity(new Intent(this, ReceiverActivity.class));
-    }
-
     public void onStopServiceClick(View view) {
         Message msg = Message.obtain (null, RandomGeneratorService.MSG_STOP);
 
@@ -67,5 +63,16 @@ public class MainActivity extends Activity {
         catch (RemoteException e) {
             Log.d(TAG, e.toString());
         }
+    }
+
+    public void onStartConstraintLayoutActivityClick(View view) {
+        startActivity(new Intent(this, ConstraintLayoutActivity.class));
+    }
+
+    public void onStartHorizontalLnearLayoutActivityClick(View view) {
+        startActivity(new Intent(this, HorizontalLinearActivity.class));
+    }
+
+    public void onStartRelativeLayoutActivityClick(View view) {
     }
 }

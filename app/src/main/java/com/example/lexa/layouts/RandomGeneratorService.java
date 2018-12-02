@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.*;
 import android.support.v4.app.JobIntentService;
 import android.util.Log;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
 import java.util.Random;
@@ -16,31 +17,46 @@ import java.util.Random;
  * a service on a separate handler thread.
  */
 public class RandomGeneratorService extends JobIntentService {
-    private static final String ACTION_START = "com.example.lexa.services1.action.START";
-    private static final String ACTION_STOPPED = "com.example.lexa.services1.action.STOPPED";
-    private static final String PARAM_NAME = "com.example.lexa.services1.extra.PARAM_NAME";
-
-//    public static final String ACTION_RECEIVE_DATA = "com.example.lexa.services1.action.RECEIVE_DATA";
-//    public static final String PARAM_RECEIVER_MESSENGER = "com.example.lexa.services1.extra.RECEIVER_MESSENGER";
-
+    static final String PARAM_DATA = "com.example.lexa.layouts.extra.PARAM_DATA";
     static final int MSG_NEW_DATA = 1,
-                     MSG_STOP = 2,
-                     MSG_WANT_DATA = 3;
+            MSG_STOP = 2,
+            MSG_WANT_DATA = 3;
 
+    private static final String ACTION_START = "com.example.lexa.layouts.action.START";
+    private static final String ACTION_STOPPED = "com.example.lexa.layouts.action.STOPPED";
+    private static final String ACTION_NEW_DATA = "com.example.lexa.layouts.action.NEW_DATA";
+    private static final String PARAM_NAME = "com.example.lexa.layouts.extra.PARAM_NAME";
     private static final String TAG = "RandomGeneratorService";
-
-    private volatile boolean mNeedStop;
-    void setNeedStop() {
-        this.mNeedStop = true;
-    }
+    private static final int MAX_COUNT = 100;
 
     private final Messenger mMessenger;
+    private volatile boolean mNeedStop;
+    private volatile Messenger mReceiverListener;
 
-    void setReceiverListener(Messenger receiverListener) {
-        this.mReceiverListener = receiverListener;
+    /**
+     * Starts this service to perform action START with the given parameters. If
+     * the service is already performing a task this action will be queued.
+     *
+     * @see IntentService
+     */
+    public static void start(Context context, String name) {
+        Intent intent = newIntent(context);
+        intent.setAction(ACTION_START);
+        intent.putExtra(PARAM_NAME, name);
+
+        enqueueWork(context, RandomGeneratorService.class, 0, intent);
     }
 
-    private volatile Messenger mReceiverListener;
+    public static IntentFilter getStoppedServiceIntentFilter() {
+        return new IntentFilter(ACTION_STOPPED);
+    }
+    public static IntentFilter getNewDataIntentFilter() {
+        return new IntentFilter(ACTION_NEW_DATA);
+    }
+
+    static Intent newIntent(Context context) {
+        return new Intent(context, RandomGeneratorService.class);
+    }
 
     public RandomGeneratorService() {
         super();
@@ -60,22 +76,11 @@ public class RandomGeneratorService extends JobIntentService {
         return false;
     }
 
-    /**
-     * Starts this service to perform action START with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
-    public static void start(Context context, String name) {
-        Intent intent = new Intent(context, RandomGeneratorService.class);
-        intent.setAction(ACTION_START);
-        intent.putExtra(PARAM_NAME, name);
-
-        enqueueWork(context, RandomGeneratorService.class, 0, intent);
+    void setNeedStop() {
+        this.mNeedStop = true;
     }
-
-    static Intent newIntent(Context context) {
-        return new Intent(context, RandomGeneratorService.class);
+    void setReceiverListener(Messenger receiverListener) {
+        this.mReceiverListener = receiverListener;
     }
 
     @Override
@@ -95,7 +100,6 @@ public class RandomGeneratorService extends JobIntentService {
      */
     private void handleActionStart(String name) {
         Random random = new Random();
-        final int MAX_COUNT = 10;
         int count =0;
         while (count < MAX_COUNT) {
             if  (mNeedStop) {
@@ -104,7 +108,12 @@ public class RandomGeneratorService extends JobIntentService {
                 return;
             }
 
-            int data = random.nextInt(10);
+            int data = random.nextInt();
+
+            Intent dataIntent = new Intent(ACTION_NEW_DATA);
+            dataIntent.putExtra(PARAM_DATA, data);
+            sendBroadcast(dataIntent);
+
             if (mReceiverListener != null) {
                 Message msg = Message.obtain(null, MSG_NEW_DATA);
                 msg.obj = data;
@@ -133,10 +142,6 @@ public class RandomGeneratorService extends JobIntentService {
     static class MessageHandler extends Handler {
         private final WeakReference<RandomGeneratorService> mService;
 
-        MessageHandler(RandomGeneratorService service) {
-            mService = new WeakReference<>(service);
-        }
-
         @Override
         public void handleMessage(Message msg) {
             final RandomGeneratorService service = mService.get();
@@ -153,10 +158,11 @@ public class RandomGeneratorService extends JobIntentService {
                     throw new RuntimeException("Unknown message 'what'");
             }
         }
-    }
 
-    public static IntentFilter getStoppedServiceIntentFilter() {
-        return new IntentFilter(ACTION_STOPPED);
+        MessageHandler(RandomGeneratorService service) {
+            mService = new WeakReference<>(service);
+        }
+
     }
 
 }

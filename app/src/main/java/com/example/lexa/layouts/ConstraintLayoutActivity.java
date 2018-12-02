@@ -8,17 +8,12 @@ import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 
-public class ReceiverActivity extends Activity {
+public class ConstraintLayoutActivity extends Activity {
+    private static final String TAG = "ConstraintLayout";
 
     private TextView mTextView;
-    TextView getTextView() {
-        return mTextView;
-    }
-
     private Messenger mServiceMessenger, mMessenger;
     private ServiceStoppedBroadcastReceiver mServiceStoppedBroadcastReceiver;
-
-    private static final String TAG = "ReceiverActivity";
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -42,10 +37,15 @@ public class ReceiverActivity extends Activity {
         }
     };
 
+    TextView getTextView() {
+        return mTextView;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_receiver);
+        setContentView(R.layout.constraint_layout);
 
         mTextView = findViewById(R.id.textView);
 
@@ -59,7 +59,6 @@ public class ReceiverActivity extends Activity {
         Log.d(TAG, "onResume");
         bindService(RandomGeneratorService.newIntent(this), mServiceConnection, Context.BIND_IMPORTANT);
         registerReceiver(mServiceStoppedBroadcastReceiver, RandomGeneratorService.getStoppedServiceIntentFilter());
-
     }
 
     @Override
@@ -71,16 +70,16 @@ public class ReceiverActivity extends Activity {
     }
 
     private static class MessageHandler extends Handler {
-        private final WeakReference<ReceiverActivity> mActivity;
+        private final WeakReference<ConstraintLayoutActivity> mActivity;
 
-        MessageHandler(ReceiverActivity activity) {
+        MessageHandler(ConstraintLayoutActivity activity) {
             mActivity = new WeakReference<>(activity);
         }
 
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == RandomGeneratorService.MSG_NEW_DATA) {
-                final ReceiverActivity activity = mActivity.get();
+                final ConstraintLayoutActivity activity = mActivity.get();
                 if (activity != null) {
                     activity.getTextView().append(msg.obj.toString());
                 }
@@ -89,15 +88,15 @@ public class ReceiverActivity extends Activity {
     }
 
     private static class ServiceStoppedBroadcastReceiver extends BroadcastReceiver {
-        private final WeakReference<ReceiverActivity> mActivity;
+        private final WeakReference<ConstraintLayoutActivity> mActivity;
 
-        ServiceStoppedBroadcastReceiver(ReceiverActivity activity) {
+        ServiceStoppedBroadcastReceiver(ConstraintLayoutActivity activity) {
             mActivity = new WeakReference<>(activity);
         }
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            final ReceiverActivity activity = mActivity.get();
+            final ConstraintLayoutActivity activity = mActivity.get();
             if (activity != null) {
                 activity.getTextView().append("\nService finished\n");
             }

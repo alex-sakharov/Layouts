@@ -8,6 +8,7 @@ import android.os.*;
 import android.support.v4.app.JobIntentService;
 import android.util.Log;
 import java.lang.ref.WeakReference;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.*;
 
@@ -32,7 +33,7 @@ public class RandomGeneratorService extends JobIntentService {
 
     private final Messenger mMessenger;
     private volatile boolean mNeedStop;
-    private ConcurrentHashMap<Messenger, Messenger> mReceiverListeners;
+    private HashSet<Messenger> mReceiverListeners;
 
     /**
      * Starts this service to perform action START with the given parameters. If
@@ -62,7 +63,7 @@ public class RandomGeneratorService extends JobIntentService {
     public RandomGeneratorService() {
         super();
         mMessenger = new Messenger(new MessageHandler(this));
-        mReceiverListeners = new ConcurrentHashMap<>(3);
+        mReceiverListeners = new HashSet<>(3);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class RandomGeneratorService extends JobIntentService {
     }
 
     @Override
-    public boolean onUnbind(Intent intent) {
+    public synchronized boolean onUnbind(Intent intent) {
         Log.d(TAG, "onUnbind");
         mReceiverListeners.clear();
         return false;
@@ -80,14 +81,6 @@ public class RandomGeneratorService extends JobIntentService {
 
     void setNeedStop() {
         this.mNeedStop = true;
-    }
-
-    void addReceiverListener(Messenger receiverListener) {
-        this.mReceiverListeners.put(receiverListener, receiverListener);
-    }
-
-    void removeReceiverListener(Messenger receiverListener) {
-        this.mReceiverListeners.remove(receiverListener);
     }
 
     @Override
@@ -99,6 +92,14 @@ public class RandomGeneratorService extends JobIntentService {
                 handleActionStart(name);
             }
         }
+    }
+
+    private synchronized void addReceiverListener(Messenger receiverListener) {
+        this.mReceiverListeners.add(receiverListener);
+    }
+
+    private synchronized void removeReceiverListener(Messenger receiverListener) {
+        this.mReceiverListeners.remove(receiverListener);
     }
 
     /**
@@ -124,11 +125,13 @@ public class RandomGeneratorService extends JobIntentService {
             Message msg = Message.obtain(null, MSG_NEW_DATA);
             msg.obj = data;
 
-            for (Messenger messenger: mReceiverListeners.keySet()) {
-                try {
-                    messenger.send(msg);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
+            synchronized (this) {
+                for (Messenger messenger: mReceiverListeners) {
+                    try {
+                        messenger.send(msg);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
